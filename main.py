@@ -38,6 +38,7 @@ def main(location, max_jobs, job_boards, debug, storage_path):
             'max_jobs': max_jobs,
             'job_boards': job_boards.split(',') if job_boards else None,
             'debug': debug if debug else None,  # Only override if flag was used
+            'storage_path': storage_path,
         }
 
         # Initialize and run the application

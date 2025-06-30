@@ -9,9 +9,9 @@ from src.config import Config
 from datetime import datetime
 
 class DataStorage:
-    def __init__(self):
+    def __init__(self, storage_path=None):
         """Initialize data storage"""
-        self.storage_path = Config().get("STORAGE_PATH")
+        self.storage_path = storage_path or Config().get("STORAGE_PATH")
         self.ensure_storage_directory()
     
     def ensure_storage_directory(self):

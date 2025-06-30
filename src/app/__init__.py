@@ -22,7 +22,7 @@ class App:
         self.resume_processor = ResumeProcessor()
         self.job_matcher = JobMatcher()
     
-    def run(self, user_location=None, max_jobs=None, job_boards=None, debug=None):
+    def run(self, user_location=None, max_jobs=None, job_boards=None, debug=None, storage_path=None):
         """Run the complete job matching pipeline"""
         print("Starting Job Matching Application...")
 
@@ -43,7 +43,8 @@ class App:
             user_location=user_location, 
             max_jobs=max_jobs, 
             job_boards=job_boards, 
-            debug=debug
+            debug=debug,
+            storage_path=storage_path
         )
 
         if self.config.get("DEBUG"):
@@ -57,7 +58,7 @@ class App:
             return
 
         # Initialize storage
-        self.storage = DataStorage()
+        self.storage = DataStorage(storage_path=storage_path)
         
         # TODO: Continue with actual implementation
         # Step 1: Scrape jobs from the specified location
