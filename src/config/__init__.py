@@ -19,14 +19,14 @@ class Config:
         """Load the configuration from the .env file with defaults"""
         self._config = {
             # Required configuration
-            "OPENAI_API_KEY": os.getenv("OPENAI_API_KEY"),
+            "OPENAI_API_KEY": self._get_str("OPENAI_API_KEY"),
             
             # Optional configuration with defaults
             "DEBUG": self._get_bool("DEBUG", False),
-            "USER_LOCATION": os.getenv("USER_LOCATION"),  # Can be None
-            "JOB_BOARDS": os.getenv("JOB_BOARDS", "indeed"),
-            "MAX_JOBS": os.getenv("MAX_JOBS", 500),
-            "STORAGE_PATH": os.getenv("STORAGE_PATH", "storage"),
+            "USER_LOCATION": self._get_str("USER_LOCATION"),  # Can be None
+            "JOB_BOARDS": self._get_list("JOB_BOARDS", ["indeed"]),
+            "MAX_JOBS": self._get_int("MAX_JOBS", 500),
+            "STORAGE_PATH": self._get_str("STORAGE_PATH", "storage"),
         }
         
     def get(self, key: str, default: Any = None) -> Any:
@@ -89,6 +89,13 @@ class Config:
         if value is None:
             return default
         return [item.strip() for item in value.split(',') if item.strip()]
+    
+    def _get_str(self, key: str, default: str = "") -> str:
+        """Get string value from environment variable"""
+        value = os.getenv(key)
+        if value is None:
+            return default
+        return value
     
     def to_dict(self) -> Dict[str, Any]:
         """Return current configuration as dictionary"""
