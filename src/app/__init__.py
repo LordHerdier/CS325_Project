@@ -14,11 +14,11 @@ class App:
     def __init__(self):
         """Initialize the main application with all services"""
         self.config = Config()                         # NOTE: Implemented
-        self.job_scraper = JobScraper()                # TODO: Implement
         self.llm_agent = LLMAgent()                    # TODO: Implement
         self.vector_db = VectorDatabase()              # TODO: Implement
         self.embedding_service = EmbeddingService()    # TODO: Implement
-        self.data_storage = DataStorage()              # NOTE: Implemented
+        self.storage = DataStorage()                  # NOTE: Implemented
+        self.job_scraper = JobScraper(self.storage)   # TODO: Implement
         self.resume_processor = ResumeProcessor()      # TODO: Implement
         self.job_matcher = JobMatcher()                # TODO: Implement
     
@@ -62,7 +62,8 @@ class App:
 
         # Test job scraping
         self.job_scraper.scrape_jobs()
-        print(self.job_scraper._get_all_jobs())
+        self.job_scraper.save_jobs()
+        print(self.job_scraper.get_jobs_from_memory())
         
         # TODO: Continue with actual implementation
         # Step 1: Scrape jobs from the specified location
