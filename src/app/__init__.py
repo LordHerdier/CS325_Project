@@ -59,6 +59,10 @@ class App:
 
         # Initialize storage
         self.storage = DataStorage(storage_path=storage_path)
+
+        # Test job scraping
+        self.job_scraper.scrape_jobs()
+        print(self.job_scraper._get_all_jobs())
         
         # TODO: Continue with actual implementation
         # Step 1: Scrape jobs from the specified location
