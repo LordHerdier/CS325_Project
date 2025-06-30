@@ -8,11 +8,12 @@ from src.embed.embedding_service import EmbeddingService
 from src.storage import DataStorage
 from src.resume import ResumeProcessor
 from src.matching import JobMatcher
+from src.config import Config
 
 class App:
-    # TODO: Actually implement the app
     def __init__(self):
         """Initialize the main application with all services"""
+        self.config = Config()
         self.job_scraper = JobScraper()
         self.llm_agent = LLMAgent()
         self.vector_db = VectorDatabase()
@@ -21,24 +22,53 @@ class App:
         self.resume_processor = ResumeProcessor()
         self.job_matcher = JobMatcher()
     
-    def run(self):
+    def run(self, user_location=None, max_jobs=None, job_boards=None, debug=None):
         """Run the complete job matching pipeline"""
         print("Starting Job Matching Application...")
-        return
+
+        # Get location from config
+        user_location = user_location or self.config.get("USER_LOCATION")
+        if not user_location:
+            print("Warning: No location specified. Use --location flag or set USER_LOCATION in .env")
+            return
         
-        # Step 1: Get user location from config file
-        # user_location = self.config.get("user_location")
+        # Get optional values with defaults
+        job_boards = job_boards or self.config.get("JOB_BOARDS")
+        max_jobs = max_jobs or self.config.get("MAX_JOBS")
+        debug = debug or self.config.get("DEBUG")
+
+        # Update config with runtime overrides
+        self.config.update_from_args(
+            user_location=user_location, 
+            max_jobs=max_jobs, 
+            job_boards=job_boards, 
+            debug=debug
+        )
+
+        if self.config.get("DEBUG"):
+            print(self.config.to_dict())
         
-        # Step 2-6: Process jobs
-        # self.process_jobs(user_location)
+        # Get required values (will raise error if missing)
+        try:
+            api_key = self.config.get_required("OPENAI_API_KEY")
+        except ValueError as e:
+            print(f"Configuration error: {e}")
+            return
+        
+        # TODO: Continue with actual implementation
+        # Step 1: Scrape jobs from the specified location
+        # jobs = self.job_scraper.scrape_jobs(user_location, job_boards)
+        
+        # Step 2-6: Process jobs with LLM and generate embeddings
+        # processed_jobs = self.process_jobs(jobs)
         
         # Step 7-8: Process resume
         # resume_embedding = self.process_resume()
         
         # Step 9-10: Find and return matching jobs
-        # matching_jobs = self.find_matching_jobs(resume_embedding)
+        # matching_jobs = self.find_matching_jobs(resume_embedding, processed_jobs)
         
-        # return matching_jobs
+        return
 
 
 
