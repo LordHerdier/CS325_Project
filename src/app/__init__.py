@@ -13,14 +13,14 @@ from src.config import Config
 class App:
     def __init__(self):
         """Initialize the main application with all services"""
-        self.config = Config()
-        self.job_scraper = JobScraper()
-        self.llm_agent = LLMAgent()
-        self.vector_db = VectorDatabase()
-        self.embedding_service = EmbeddingService()
-        self.data_storage = DataStorage()
-        self.resume_processor = ResumeProcessor()
-        self.job_matcher = JobMatcher()
+        self.config = Config()                         # NOTE: Implemented
+        self.job_scraper = JobScraper()                # TODO: Implement
+        self.llm_agent = LLMAgent()                    # TODO: Implement
+        self.vector_db = VectorDatabase()              # TODO: Implement
+        self.embedding_service = EmbeddingService()    # TODO: Implement
+        self.data_storage = DataStorage()              # NOTE: Implemented
+        self.resume_processor = ResumeProcessor()      # TODO: Implement
+        self.job_matcher = JobMatcher()                # TODO: Implement
     
     def run(self, user_location=None, max_jobs=None, job_boards=None, debug=None, storage_path=None):
         """Run the complete job matching pipeline"""
