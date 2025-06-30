@@ -228,12 +228,7 @@ Icon
 *.rtf
 *.odt
 
-# Uploads
-uploads/
-
-# Job results
-job_results/
-*.csv
-*.xlsx
-*.json
+# Storage
+storage/
+!storage/.gitkeep
 

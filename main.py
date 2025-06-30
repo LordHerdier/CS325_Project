@@ -26,7 +26,12 @@ from src.config import config
     is_flag=True, 
     help='Enable debug mode (overrides config)'
 )
-def main(location, max_jobs, job_boards, debug):
+@click.option(
+    '--storage-path',
+    type=click.Path(),
+    help='Path for storing data files (overrides config)'
+)
+def main(location, max_jobs, job_boards, debug, storage_path):
     try:
         args = {
             'user_location': location,

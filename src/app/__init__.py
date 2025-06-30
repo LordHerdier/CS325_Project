@@ -29,8 +29,9 @@ class App:
         # Get location from config
         user_location = user_location or self.config.get("USER_LOCATION")
         if not user_location:
-            print("Warning: No location specified. Use --location flag or set USER_LOCATION in .env")
-            return
+            # Get from user input
+            user_location = input("Enter your location: ")
+            user_location = user_location.strip()
         
         # Get optional values with defaults
         job_boards = job_boards or self.config.get("JOB_BOARDS")
@@ -54,6 +55,9 @@ class App:
         except ValueError as e:
             print(f"Configuration error: {e}")
             return
+
+        # Initialize storage
+        self.storage = DataStorage()
         
         # TODO: Continue with actual implementation
         # Step 1: Scrape jobs from the specified location

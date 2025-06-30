@@ -26,6 +26,7 @@ class Config:
             "USER_LOCATION": os.getenv("USER_LOCATION"),  # Can be None
             "JOB_BOARDS": os.getenv("JOB_BOARDS", "indeed"),
             "MAX_JOBS": os.getenv("MAX_JOBS", 500),
+            "STORAGE_PATH": os.getenv("STORAGE_PATH", "storage"),
         }
         
     def get(self, key: str, default: Any = None) -> Any:

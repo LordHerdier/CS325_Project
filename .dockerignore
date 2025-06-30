@@ -74,10 +74,8 @@ logs/*.log
 !.cache/.gitkeep
 
 # Upload directories (keep structure but not content)
-uploads/*
-!uploads/.gitkeep
-job_results/*
-!job_results/.gitkeep
+storage/*
+!storage/.gitkeep
 
 # Development files
 .env.example
