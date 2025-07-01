@@ -23,7 +23,7 @@ def clean_jobs(jobs: pd.DataFrame) -> pd.DataFrame:
     
     # 1. Drop any of those extraneous columns if they exist
     cols_to_drop = [
-        "id", "site",
+        "site",
         "job_url", "job_url_direct",
         "job_type", "salary_source", "interval", "min_amount", "max_amount",
         "currency", "is_remote", "listing_type", "vacancy_count", "work_from_home_type",
