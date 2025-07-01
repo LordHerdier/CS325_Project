@@ -1,6 +1,7 @@
 import pandas as pd
 import re
 from typing import List
+import math
 
 
 def clean_jobs(jobs: pd.DataFrame) -> pd.DataFrame:
@@ -41,7 +42,32 @@ def clean_jobs(jobs: pd.DataFrame) -> pd.DataFrame:
     # 3. Remove any rows where the row is null
     # df = df.dropna()
 
+    # Remove duplicates
+    df = df.drop_duplicates()
+
     # 4. Remove any escape sequences, or any other special characters
     df = df.map(lambda x: re.sub(r"[^a-zA-Z0-9\s]", "", x) if isinstance(x, str) else x)
 
     return df 
+
+def cosine_similarity(a: List[float], b: List[float]) -> float:
+    """
+    Calculate the cosine similarity between two vectors.
+    
+    Returns a float in [-1, 1]. If either vector has zero magnitude, returns 0.0.
+    """
+    if len(a) != len(b):
+        raise ValueError("Vectors must be the same length")
+    
+    # Dot product
+    dot = sum(x * y for x, y in zip(a, b))
+    
+    # Norms (magnitudes)
+    norm_a = math.sqrt(sum(x * x for x in a))
+    norm_b = math.sqrt(sum(y * y for y in b))
+    
+    if norm_a == 0 or norm_b == 0:
+        # Avoid division by zero; no direction to compare
+        return 0.0
+    
+    return dot / (norm_a * norm_b)

@@ -7,16 +7,13 @@ Main entry point for the job scraping application.
 
 from .cli import parse_args, validate_args
 from .scraper import get_jobs, JOB_BOARDS
-from .data_processor import clean_jobs
+from .data_processor import clean_jobs, cosine_similarity
 from .storage import dump_list_of_dicts_to_json, save_to_json, generate_filename
 from .llm import LLM
 import pandas as pd
 import numpy as np
 from typing import List, Dict, Any
 import json
-
-# Panda dataframes make me want to kill myself :)
-
 
 def main():
     """Main application entry point."""
@@ -32,23 +29,21 @@ def main():
     filename = generate_filename(args.storage_path)
     
     # Clean the jobs
-    print("Cleaning job data...")
+    # print("Cleaning job data...")
     jobs = clean_jobs(jobs)
 
-    # Okay because panda dataframes are just sooooooo great, here's a hack to convert it to a list of dicts
-    # (i've spent more time trying to figure out how to convert a panda dataframe to a list of dicts than I have on the rest of this project. fuck pandas)
-    # (trust me, it should be super simple. It's not. They even have a built in function to do it for you! That gives you the wrong python type! Literally wtf pandas)
-
+    # Convert DataFrame to JSON and back to ensure type consistency
+    # This is a workaround for the issue where pandas DataFrame can cause type inconsistencies
     # 1. Dump it to JSON
     jobs_json = jobs.to_json(orient="records")
 
-    # 2. Delete the original DataFrame to make absolutely sure there's not some type-fuckery going on here
+    # 2. Delete the original DataFrame to make absolutely sure there's not some type-related issue
     del jobs
 
     # 3. Load it back as a list of dicts using json.loads with explicit type
     jobs: List[Dict[str, Any]] = json.loads(jobs_json)
     
-    print(f'Type of jobs: {type(jobs)}')
+    # print(f'Type of jobs: {type(jobs)}')
 
     # Initialize the LLM client
     llm = LLM()
@@ -63,6 +58,64 @@ def main():
     # Dump to file
     dump_list_of_dicts_to_json(extracted_jobs, filename)
     print(f"Jobs saved to {filename}")
+
+    # Load resume
+    with open(args.resume, 'r') as file:
+        resume_text = file.read()
+
+    # Extract resume information using the LLM
+    print("Extracting resume information using LLM...")
+    resume_info = llm.extract_resume_information(resume_text)
+    if args.debug:
+        print("Extracted resume information:")
+        print(resume_info)
+
+    # Embed the resume text
+    print("Generating embeddings for resume information...")
+    resume_embedding = llm.embed_text(resume_text)
+    if args.debug:
+        print(f"Resume embedding: {resume_embedding[:5]}...")
+
+    # Embed the jobs
+    print("Generating embeddings for job information...")
+    job_embeddings = [llm.embed_text(str(job)) for job in extracted_jobs]
+
+    if args.debug:
+        print(f"Sample job embedding: {job_embeddings[0][:5]}...")
+
+    # Calculate cosine similarity between resume and each job
+    print("Calculating cosine similarity between resume and job embeddings...")
+    similarities = []
+    for job_embedding in job_embeddings:
+        similarity = cosine_similarity(resume_embedding, job_embedding)
+        similarities.append(similarity)
+
+    # Add similarities to the extracted jobs
+    for job, similarity in zip(extracted_jobs, similarities):
+        job['similarity'] = similarity
+
+    # Convert to DataFrame for easier manipulation
+    jobs_df = pd.DataFrame(extracted_jobs)
+    if args.debug:
+        print("Sample jobs DataFrame:")
+        print(jobs_df.head())
+
+    # Sort jobs by similarity
+    jobs_df = jobs_df.sort_values(by='similarity', ascending=False)
+    print("Jobs sorted by similarity to resume.")
+
+    # Save the sorted jobs to JSON
+    sorted_filename = f"sorted_{filename}"
+    save_to_json(jobs_df, sorted_filename)
+    print(f"Sorted jobs saved to {sorted_filename}")
+
+    # Print the top 10 jobs
+    print("Top 10 jobs based on similarity:")
+    for index, job in jobs_df.head(10).iterrows():
+        print(f"Job Title: {job['title']}, Similarity: {job['similarity']:.4f}")
+        # print(f"Company: {job['company']}, Location: {job['location']}")
+        print()
+    
 
 if __name__ == "__main__":
     main() 
