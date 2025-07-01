@@ -33,6 +33,20 @@ def save_to_json(jobs: pd.DataFrame, storage_path: str) -> None:
     
     jobs.to_json(storage_path, orient="records", indent=4)
 
+def dump_list_of_dicts_to_json(data: list[dict], storage_path: str) -> None:
+    """
+    Save a list of dictionaries to a JSON file.
+    
+    Args:
+        data: List of dictionaries to save
+        storage_path: Path where to save the JSON file
+    """
+    # Ensure the directory exists
+    os.makedirs(os.path.dirname(storage_path), exist_ok=True)
+    
+    with open(storage_path, "w") as f:
+        json.dump(data, f, indent=4)
+
 
 def generate_filename(storage_path: str) -> str:
     """
