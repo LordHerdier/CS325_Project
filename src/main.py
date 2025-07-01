@@ -23,24 +23,26 @@ def main():
     
     # Scrape jobs
     print(f"Scraping {args.results_wanted} jobs from {JOB_BOARDS} in {args.location}...")
-    jobs = get_jobs(args.location, args.results_wanted, args.distance, args.debug, JOB_BOARDS)
+    jobs_df = get_jobs(args.location, args.results_wanted, args.distance, args.debug, JOB_BOARDS)
     
     # Generate filename with timestamp
     filename = generate_filename(args.storage_path)
     
     # Clean the jobs
     # print("Cleaning job data...")
-    jobs = clean_jobs(jobs)
+    jobs_df = clean_jobs(jobs_df)
 
     # Convert DataFrame to JSON and back to ensure type consistency
     # This is a workaround for the issue where pandas DataFrame can cause type inconsistencies
     # 1. Dump it to JSON
-    jobs_json = jobs.to_json(orient="records")
+    jobs_json = jobs_df.to_json(orient="records")
 
     # 2. Delete the original DataFrame to make absolutely sure there's not some type-related issue
-    del jobs
+    del jobs_df
 
     # 3. Load it back as a list of dicts using json.loads with explicit type
+    if jobs_json is None:
+        raise ValueError("Failed to convert jobs DataFrame to JSON")
     jobs: List[Dict[str, Any]] = json.loads(jobs_json)
     
     # print(f'Type of jobs: {type(jobs)}')
@@ -48,16 +50,23 @@ def main():
     # Initialize the LLM client
     llm = LLM()
 
-    # Extract job information using the LLM
-    print("Extracting job information using LLM...")
-    extracted_jobs = llm.extract_job_information(jobs)
-    if args.debug:
-        print("Extracted job information:")
-        print(f"Sample extracted job: {extracted_jobs[0]}")
+    # Conditionally extract job information using the LLM
+    if args.process_jobs_with_llm:
+        print("Extracting job information using LLM...")
+        extracted_jobs = llm.extract_job_information(jobs)
+        if args.debug:
+            print("Extracted job information:")
+            print(f"Sample extracted job: {extracted_jobs[0]}")
+        
+        # Use extracted jobs for processing
+        jobs_to_process = extracted_jobs
+    else:
+        # Use original jobs for processing
+        jobs_to_process = jobs
 
     # Dump to file
-    dump_list_of_dicts_to_json(extracted_jobs, filename)
-    print(f"Jobs saved to {filename}")
+    # dump_list_of_dicts_to_json(extracted_jobs, filename)
+    # print(f"Jobs saved to {filename}")
 
     # Load resume
     with open(args.resume, 'r') as file:
@@ -78,7 +87,7 @@ def main():
 
     # Embed the jobs
     print("Generating embeddings for job information...")
-    job_embeddings = [llm.embed_text(str(job)) for job in extracted_jobs]
+    job_embeddings = [llm.embed_text(str(job)) for job in jobs_to_process]
 
     if args.debug:
         print(f"Sample job embedding: {job_embeddings[0][:5]}...")
@@ -91,11 +100,11 @@ def main():
         similarities.append(similarity)
 
     # Add similarities to the extracted jobs
-    for job, similarity in zip(extracted_jobs, similarities):
+    for job, similarity in zip(jobs_to_process, similarities):
         job['similarity'] = similarity
 
     # Convert to DataFrame for easier manipulation
-    jobs_df = pd.DataFrame(extracted_jobs)
+    jobs_df = pd.DataFrame(jobs_to_process)
     if args.debug:
         print("Sample jobs DataFrame:")
         print(jobs_df.head())

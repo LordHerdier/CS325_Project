@@ -14,6 +14,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--debug", action="store_true", help="Enable debug mode")
     parser.add_argument("--resume", type=str, help="Path to the user's resume file")
     parser.add_argument("--storage-path", type=str, default=STORAGE_PATH, help="Path to store the jobs")
+    parser.add_argument("--process-jobs-with-llm", action="store_true", help="Enable LLM processing of job information")
     return parser.parse_args()
 
 
