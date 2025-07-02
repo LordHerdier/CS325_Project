@@ -335,10 +335,11 @@ def _process_jobs_with_resume(jobs_to_analyze: List[Dict[str, Any]], config: Dic
     jobs_df = pd.DataFrame(all_jobs_with_embeddings)
     jobs_df = jobs_df.sort_values(by='similarity', ascending=False)
     
-    print(f"\n🏆 Top {min(5, len(jobs_df))} jobs based on similarity:")
+    show_top = config.get('show_top', 5)
+    print(f"\n🏆 Top {min(show_top, len(jobs_df))} jobs based on similarity:")
     print("-" * 60)
     
-    for index, job in jobs_df.head(5).iterrows():
+    for index, job in jobs_df.head(show_top).iterrows():
         print(f"📋 {job['title']}")
         print(f"   🏢 Company: {job.get('company', 'N/A')}")
         print(f"   🎯 Similarity: {job['similarity']:.4f}")
